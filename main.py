@@ -46,7 +46,7 @@ twitch_miner = TwitchChannelPointsMiner(
             BET_wiN=Fore.MAGENTA                # Color allowed are: [BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE, RESET].
         ),
         discord=Discord(
-             webhook_api="https://discord.com/api/webhooks/1186392588081709159/59rVrJizuXctd-g3Q-mfpVszH7D7BDrG9IoKnf4Va949thQLfKtl8pRLwdam1HwgKBQv",  # Discord Webhook URL
+             webhook_api="https://discord.com/api/webhooks/1314262421388398642/PF2gacRGx-DZYFVhq-MzTFh8VmAo-LZres_8DMvB9xf6olfq8UanMiSBrFI164jXrkI1",  # Discord Webhook URL
             events=[Events.STREAMER_ONLINE, Events.STREAMER_OFFLINE, Events.BET_LOSE, Events.BET_GENERAL, Events.BET_FAILED, Events.BET_FILTERS,
                     Events.BET_REFUND, Events.BET_START, Events.BET_WIN, Events.BONUS_CLAIM, Events.CHAT_MENTION, Events.GAIN_FOR_RAID, 
                     Events.DROP_CLAIM, Events.DROP_STATUS, Events.GAIN_FOR_CLAIM, Events.GAIN_FOR_WATCH, Events.GAIN_FOR_WATCH_STREAK, 
@@ -90,19 +90,8 @@ twitch_miner = TwitchChannelPointsMiner(
 
 twitch_miner.mine(
     [
-      Streamer("fan12_yt", settings=StreamerSettings(follow_raid=True , claim_drops=True  , watch_streak=True)),
-      Streamer("justryyyy", settings=StreamerSettings(follow_raid=True , claim_drops=True  , watch_streak=True)),
-      Streamer("speciialera", settings=StreamerSettings(follow_raid=True , claim_drops=True  , watch_streak=True)),
-      Streamer("LilaFrost21", settings=StreamerSettings(follow_raid=True , claim_drops=True  , watch_streak=True)),
-      Streamer("lhs_leader", settings=StreamerSettings(follow_raid=True , claim_drops=True  , watch_streak=True)),
-      Streamer("RebootDemi", settings=StreamerSettings(follow_raid=True , claim_drops=True  , watch_streak=True)),
-      Streamer("hammafv", settings=StreamerSettings(follow_raid=True , claim_drops=True  , watch_streak=True)),
-      Streamer("arguz11", settings=StreamerSettings(follow_raid=True , claim_drops=True  , watch_streak=True)),
-      Streamer("Zintid", settings=StreamerSettings(follow_raid=True , claim_drops=True  , watch_streak=True)),
-      Streamer("hamingxd", settings=StreamerSettings(follow_raid=True , claim_drops=True  , watch_streak=True)),
-      Streamer("wikk6", settings=StreamerSettings(follow_raid=True , claim_drops=True  , watch_streak=True)),
-      Streamer("laruletaderobux", settings=StreamerSettings(follow_raid=True , claim_drops=True  , watch_streak=True)),
-      Streamer("xlangelz", settings=StreamerSettings(follow_raid=True , claim_drops=True  , watch_streak=True)),
+      Streamer("streameruniversitario", settings=StreamerSettings(follow_raid=True , claim_drops=True  , watch_streak=True)),
+      Streamer("aris_sinpausa", settings=StreamerSettings(follow_raid=True , claim_drops=True  , watch_streak=True)),
         
     ],                                  # Array of streamers (order = priority)
     followers=False,                    # Automatic download the list of your followers
