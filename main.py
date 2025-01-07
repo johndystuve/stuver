@@ -46,7 +46,7 @@ twitch_miner = TwitchChannelPointsMiner(
             BET_wiN=Fore.MAGENTA                # Color allowed are: [BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE, RESET].
         ),
         discord=Discord(
-             webhook_api="https://discord.com/api/webhooks/1314262421388398642/PF2gacRGx-DZYFVhq-MzTFh8VmAo-LZres_8DMvB9xf6olfq8UanMiSBrFI164jXrkI1",  # Discord Webhook URL
+             webhook_api=os.environ.get('dwebhook'),  # Discord Webhook URL
             events=[Events.STREAMER_ONLINE, Events.STREAMER_OFFLINE, Events.BET_LOSE, Events.BET_GENERAL, Events.BET_FAILED, Events.BET_FILTERS,
                     Events.BET_REFUND, Events.BET_START, Events.BET_WIN, Events.BONUS_CLAIM, Events.CHAT_MENTION, Events.GAIN_FOR_RAID, 
                     Events.DROP_CLAIM, Events.DROP_STATUS, Events.GAIN_FOR_CLAIM, Events.GAIN_FOR_WATCH, Events.GAIN_FOR_WATCH_STREAK, 
