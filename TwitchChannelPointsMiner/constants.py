@@ -4,7 +4,6 @@ import time
 from base64 import b64encode
 
 from TwitchChannelPointsMiner.classes.Settings import Settings
-from TwitchChannelPointsMiner.constants import DROP_ID
 
 logger = logging.getLogger(__name__)
 
