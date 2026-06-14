@@ -1,106 +1,230 @@
-import json
-import logging
-import time
-from base64 import b64encode
+# Twitch endpoints
+URL = "https://www.twitch.tv"               # Browser, Apps
+# URL = "https://m.twitch.tv"               # Mobile Browser
+# URL = "https://android.tv.twitch.tv"      # TV
+IRC = "irc.chat.twitch.tv"
+IRC_PORT = 6667
+WEBSOCKET = "wss://pubsub-edge.twitch.tv/v1"
+CLIENT_ID = "ue6666qo983tsx6so1t0vnawi233wa"        # TV
+# CLIENT_ID = "kimne78kx3ncx6brgo4mv6wki5h1ko"      # Browser
+# CLIENT_ID = "r8s4dac0uhzifbpu9sjdiwzctle17ff"     # Mobile Browser
+# CLIENT_ID = "kd1unb4b3q4t58fwlpcbzcbnm76a8fp"     # Android App
+# CLIENT_ID = "851cqzxpb9bqu9z6galo155du"           # iOS App
+DROP_ID = "c2542d6d-cd10-4532-919b-3d19f30a768b"
+# CLIENT_VERSION = "32d439b2-bd5b-4e35-b82a-fae10b04da70"  # Android App
+CLIENT_VERSION = "ef928475-9403-42f2-8a34-55784bd08e16"  # Browser
 
-from TwitchChannelPointsMiner.classes.Settings import Settings
+USER_AGENTS = {
+    "Windows": {
+        'CHROME': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36",
+        "FIREFOX": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0",
+    },
+    "Linux": {
+        "CHROME": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.96 Safari/537.36",
+        "FIREFOX": "Mozilla/5.0 (X11; Linux x86_64; rv:85.0) Gecko/20100101 Firefox/85.0",
+    },
+    "Android": {
+        # "App": "Dalvik/2.1.0 (Linux; U; Android 7.1.2; SM-G975N Build/N2G48C) tv.twitch.android.app/13.4.1/1304010"
+        "App": "Dalvik/2.1.0 (Linux; U; Android 7.1.2; SM-G977N Build/LMY48Z) tv.twitch.android.app/14.3.2/1403020",
+        "TV": "Mozilla/5.0 (Linux; Android 7.1; Smart Box C1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36"
+    }
+}
 
-logger = logging.getLogger(__name__)
+BRANCH = "master"
+GITHUB_url = (
+    "https://raw.githubusercontent.com/rdavydov/Twitch-Channel-Points-Miner-v2/"
+    + BRANCH
+)
 
 
-class Stream(object):
-    __slots__ = [
-        "broadcast_id",
-        "title",
-        "game",
-        "tags",
-        "drops_tags",
-        "campaigns",
-        "campaigns_ids",
-        "viewers_count",
-        "spade_url",
-        "payload",
-        "watch_streak_missing",
-        "minute_watched",
-        "__last_update",
-        "__minute_watched_timestamp",
-    ]
-
-    def __init__(self):
-        self.broadcast_id = None
-
-        self.title = None
-        self.game = {}
-        self.tags = []
-
-        self.drops_tags = False
-        self.campaigns = []
-        self.campaigns_ids = []
-
-        self.viewers_count = 0
-        self.__last_update = 0
-
-        self.spade_url = None
-        self.payload = None
-
-        self.init_watch_streak()
-
-    def encode_payload(self) -> dict:
-        json_event = json.dumps(self.payload, separators=(",", ":"))
-        return {"data": (b64encode(json_event.encode("utf-8"))).decode("utf-8")}
-
-    def update(self, broadcast_id, title, game, tags, viewers_count):
-        self.broadcast_id = broadcast_id
-        self.title = title.strip()
-        self.game = game
-        # #343 temporary workaround
-        self.tags = tags or []
-        # ------------------------
-        self.viewers_count = viewers_count
-
-        self.drops_tags = (
-            DROP_ID in [tag["id"] for tag in self.tags] and self.game != {}
-        )
-        self.__last_update = time.time()
-
-        logger.debug(f"Update: {self}")
-
-    def __repr__(self):
-        return f"Stream(title={self.title}, game={self.__str_game()}, tags={self.__str_tags()})"
-
-    def __str__(self):
-        return f"{self.title}" if Settings.logger.less else self.__repr__()
-
-    def __str_tags(self):
-        return (
-            None
-            if self.tags == []
-            else ", ".join([tag["localizedName"] for tag in self.tags])
-        )
-
-    def __str_game(self):
-        return None if self.game in [{}, None] else self.game["displayName"]
-
-    def game_name(self):
-        return None if self.game in [{}, None] else self.game["name"]
-    
-    def game_id(self):
-        return None if self.game in [{}, None] else self.game["id"]
-
-    def update_required(self):
-        return self.__last_update == 0 or self.update_elapsed() >= 120
-
-    def update_elapsed(self):
-        return 0 if self.__last_update == 0 else (time.time() - self.__last_update)
-
-    def init_watch_streak(self):
-        self.watch_streak_missing = True
-        self.minute_watched = 0
-        self.__minute_watched_timestamp = 0
-
-    def update_minute_watched(self):
-        if self.__minute_watched_timestamp != 0:
-            self.minute_watched += round(
-                (time.time() - self.__minute_watched_timestamp) / 60, 5
-            )
-        self.__minute_watched_timestamp = time.time()
+class GQLOperations:
+    url = "https://gql.twitch.tv/gql"
+    integrity_url = "https://gql.twitch.tv/integrity"
+    WithIsStreamLiveQuery = {
+        "operationName": "WithIsStreamLiveQuery",
+        "extensions": {
+            "persistedQuery": {
+                "version": 1,
+                "sha256Hash": "04e46329a6786ff3a81c01c50bfa5d725902507a0deb83b0edbf7abe7a3716ea",
+            }
+        },
+    }
+    PlaybackAccessToken = {
+        "operationName": "PlaybackAccessToken",
+        "extensions": {
+            "persistedQuery": {
+                "version": 1,
+                "sha256Hash": "3093517e37e4f4cb48906155bcd894150aef92617939236d2508f3375ab732ce",
+            }
+        },
+    }
+    VideoPlayerStreamInfoOverlayChannel = {
+        "operationName": "VideoPlayerStreamInfoOverlayChannel",
+        "extensions": {
+            "persistedQuery": {
+                "version": 1,
+                "sha256Hash": "198492e0857f6aedead9665c81c5a06d67b25b58034649687124083ff288597d",
+            }
+        },
+    }
+    ClaimCommunityPoints = {
+        "operationName": "ClaimCommunityPoints",
+        "extensions": {
+            "persistedQuery": {
+                "version": 1,
+                "sha256Hash": "46aaeebe02c99afdf4fc97c7c0cba964124bf6b0af229395f1f6d1feed05b3d0",
+            }
+        },
+    }
+    CommunityMomentCallout_Claim = {
+        "operationName": "CommunityMomentCallout_Claim",
+        "extensions": {
+            "persistedQuery": {
+                "version": 1,
+                "sha256Hash": "e2d67415aead910f7f9ceb45a77b750a1e1d9622c936d832328a0689e054db62",
+            }
+        },
+    }
+    DropsPage_ClaimDropRewards = {
+        "operationName": "DropsPage_ClaimDropRewards",
+        "extensions": {
+            "persistedQuery": {
+                "version": 1,
+                "sha256Hash": "a455deea71bdc9015b78eb49f4acfbce8baa7ccbedd28e549bb025bd0f751930",
+            }
+        },
+    }
+    ChannelPointsContext = {
+        "operationName": "ChannelPointsContext",
+        "extensions": {
+            "persistedQuery": {
+                "version": 1,
+                "sha256Hash": "374314de591e69925fce3ddc2bcf085796f56ebb8cad67a0daa3165c03adc345",
+            }
+        },
+    }
+    JoinRaid = {
+        "operationName": "JoinRaid",
+        "extensions": {
+            "persistedQuery": {
+                "version": 1,
+                "sha256Hash": "c6a332a86d1087fbbb1a8623aa01bd1313d2386e7c63be60fdb2d1901f01a4ae",
+            }
+        },
+    }
+    ModViewChannelQuery = {
+        "operationName": "ModViewChannelQuery",
+        "extensions": {
+            "persistedQuery": {
+                "version": 1,
+                "sha256Hash": "df5d55b6401389afb12d3017c9b2cf1237164220c8ef4ed754eae8188068a807",
+            }
+        },
+    }
+    Inventory = {
+        "operationName": "Inventory",
+        "variables": {"fetchRewardCampaigns": True},
+        # "variables": {},
+        "extensions": {
+            "persistedQuery": {
+                "version": 1,
+                "sha256Hash": "d86775d0ef16a63a33ad52e80eaff963b2d5b72fada7c991504a57496e1d8e4b",
+            }
+        },
+    }
+    MakePrediction = {
+        "operationName": "MakePrediction",
+        "extensions": {
+            "persistedQuery": {
+                "version": 1,
+                "sha256Hash": "b44682ecc88358817009f20e69d75081b1e58825bb40aa53d5dbadcc17c881d8",
+            }
+        },
+    }
+    ViewerDropsDashboard = {
+        "operationName": "ViewerDropsDashboard",
+        # "variables": {},
+        "variables": {"fetchRewardCampaigns": True},
+        "extensions": {
+            "persistedQuery": {
+                "version": 1,
+                "sha256Hash": "5a4da2ab3d5b47c9f9ce864e727b2cb346af1e3ea8b897fe8f704a97ff017619",
+            }
+        },
+    }
+    DropCampaignDetails = {
+        "operationName": "DropCampaignDetails",
+        "extensions": {
+            "persistedQuery": {
+                "version": 1,
+                "sha256Hash": "f6396f5ffdde867a8f6f6da18286e4baf02e5b98d14689a69b5af320a4c7b7b8",
+            }
+        },
+    }
+    DropsHighlightService_AvailableDrops = {
+        "operationName": "DropsHighlightService_AvailableDrops",
+        "extensions": {
+            "persistedQuery": {
+                "version": 1,
+                "sha256Hash": "9a62a09bce5b53e26e64a671e530bc599cb6aab1e5ba3cbd5d85966d3940716f",
+            }
+        },
+    }
+    GetIDFromLogin = {
+        "operationName": "GetIDFromLogin",
+        "variables": {"login": None},
+        "extensions": {
+            "persistedQuery": {
+                "version": 1,
+                "sha256Hash": "94e82a7b1e3c21e186daa73ee2afc4b8f23bade1fbbff6fe8ac133f50a2f58ca",
+            }
+        },
+    }
+    PersonalSections = (
+        {
+            "operationName": "PersonalSections",
+            "variables": {
+                "input": {
+                    "sectionInputs": ["FOLLOWED_SECTION"],
+                    "recommendationContext": {"platform": "web"},
+                },
+                "channelLogin": None,
+                "withChannelUser": False,
+                "creatorAnniversariesExperimentEnabled": False,
+            },
+            "extensions": {
+                "persistedQuery": {
+                    "version": 1,
+                    "sha256Hash": "9fbdfb00156f754c26bde81eb47436dee146655c92682328457037da1a48ed39",
+                }
+            },
+        },
+    )
+    ChannelFollows = {
+        "operationName": "ChannelFollows",
+        "variables": {"limit": 100, "order": "ASC"},
+        "extensions": {
+            "persistedQuery": {
+                "version": 1,
+                "sha256Hash": "eecf815273d3d949e5cf0085cc5084cd8a1b5b7b6f7990cf43cb0beadf546907",
+            }
+        },
+    }
+    UserPointsContribution = {
+        "operationName": "UserPointsContribution",
+        "extensions": {
+            "persistedQuery": {
+                "version": 1,
+                "sha256Hash": "23ff2c2d60708379131178742327ead913b93b1bd6f665517a6d9085b73f661f"
+            }
+        }
+    }
+    ContributeCommunityPointsCommunityGoal = {
+        "operationName": "ContributeCommunityPointsCommunityGoal",
+        "extensions": {
+            "persistedQuery": {
+                "version": 1,
+                "sha256Hash": "5774f0ea5d89587d73021a2e03c3c44777d903840c608754a1be519f51e37bb6"
+            }
+        }
+    }
