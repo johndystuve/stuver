@@ -40,8 +40,8 @@ class Discord(object):
 
         payload = {
             "content": dedent(message),
-            "username": "miau",
-            "avatar_url": "https://cdn.discordapp.com/attachments/1011810855895179354/1317598510534754465/IMG_3753.jpg"
+            "username": "Twitch Channel Points Miner",
+            "avatar_url": "https://i.imgur.com/X9fEkhT.png"
         }
 
         threading.Thread(target=self._enviar, args=(payload,), daemon=True).start()
